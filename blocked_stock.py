@@ -39,6 +39,19 @@ class BlockedStockLine:
     type:str
     date_created:str
     date_archived:str
+    type:str
+    ncf:str
+    ncr:str
+    resp:str
+    provision:str
+    step_ncf:str
+    comment:str
+    stock_exit_type:str
+    vendor_id:str
+    reason_code:str
+    vendor_name:str
+    destruction_at_vendor_cost:str
+    stock_exit_done:str
 
 class BlockedStock:
     def __init__(self, sheet:Worksheet):
