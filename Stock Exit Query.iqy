@@ -1,0 +1,16 @@
+WEB
+1
+https://pmicloud.sharepoint.com/teams/SerriersBlockedStock-LOGQA-CH/_vti_bin/owssvr.dll?XMLDATA=1&List=3b30050d-8db3-4cd6-b265-c1d19f5eae71&View=72635CEA-92E3-4ACB-8128-D7F6DE86F1E3&RowLimit=0&RootFolder=
+
+Selection=3b30050d-8db3-4cd6-b265-c1d19f5eae71-72635CEA-92E3-4ACB-8128-D7F6DE86F1E3
+EditWebPage=
+Formatting=None
+PreFormattedTextToColumns=True
+ConsecutiveDelimitersAsOne=True
+SingleBlockTextImport=False
+DisableDateRecognition=False
+DisableRedirections=False
+SharePointApplication=https://pmicloud.sharepoint.com/teams/SerriersBlockedStock-LOGQA-CH/_vti_bin
+SharePointListView=72635CEA-92E3-4ACB-8128-D7F6DE86F1E3
+SharePointListName=3b30050d-8db3-4cd6-b265-c1d19f5eae71
+RootFolder=

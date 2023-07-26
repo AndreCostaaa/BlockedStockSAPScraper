@@ -2,3 +2,5 @@
 /SAP.zip
 /__pycache__
 /~$BlockedStockMQA.xlsx
+/*.dist
+/*.build

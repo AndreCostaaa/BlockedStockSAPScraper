@@ -1,8 +1,7 @@
 import os
-import openpyxl as xl
-from blocked_stock import BlockedStock, BlockedStockLine, DbHandler, get_current_stock
-from pprint import pprint
-from dataclasses import asdict
+
+from blocked_stock import DbHandler
+
 from config import load_config
 
 from data_fetcher import fetch_data_wait
@@ -34,24 +33,23 @@ def close_windows():
 
     os.system(f"taskkill /f /im saplogon.exe")
     os.system(f"taskkill /f /im excel.exe")
-    
+
+def open_db(file_path):
+    os.system(f"start excel {file_path}")
+
 import time
 def main():
 
     config = load_config()
-    
     close_windows()
     time.sleep(1)
-    data_path = fetch_data_wait(config.sap_path)    
-    print("Calculating current stock. Please wait, this may take a while")
-    curr_blocked_stock = get_current_stock(r"C:\temp\EXPORT.xlsx" )
-
-    print("Calculating differences")
+    
     db = DbHandler(config.xlsx_db_path)
+    curr_blocked_stock = fetch_data_wait(config.sap_path,db.nc_data, db.stock_exit_new)
     db.handle_differences(curr_blocked_stock)
-    print("Exporting data")
-    db.save()
+    db.save() 
     close_windows()
+    open_db(db.file_path)
 
 if __name__ == "__main__":
     main()
