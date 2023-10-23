@@ -7,8 +7,10 @@
     {
       "name": "Python: Sap",
       "type": "python",
+      "python": "${workspaceFolder}/env/scripts/python",
       "request": "launch",
-      "program": "C:\\dev\\SAP\\main.py",
+      "program": "${workspaceFolder}/src/main.py",
+      "cwd": "${workspaceFolder}/src",
       "console": "integratedTerminal",
       "justMyCode": true
     }

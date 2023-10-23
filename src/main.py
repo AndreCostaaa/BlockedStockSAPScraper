@@ -1,4 +1,4 @@
-import os
+from process_handler import close_windows, open_excel_file
 
 from blocked_stock import DbHandler
 
@@ -29,27 +29,23 @@ def copy_data(source_data, dest_file, sheet_name, dest_start_row, dest_start_col
             dest_sheet.cell(row=i, column=j).value = ""
         i += 1
 
-def close_windows():
 
-    os.system(f"taskkill /f /im saplogon.exe")
-    os.system(f"taskkill /f /im excel.exe")
-
-def open_db(file_path):
-    os.system(f"start excel {file_path}")
 
 import time
 def main():
-
     config = load_config()
+    input("[Script Startup] Les processus SAP et EXCEL vont se fermer. Sauvegardez votre travail et pressez sur ENTER...")
     close_windows()
     time.sleep(1)
-    
     db = DbHandler(config.xlsx_db_path)
-    curr_blocked_stock = fetch_data_wait(config.sap_path,db.nc_data, db.stock_exit_new)
+ 
+    curr_blocked_stock = fetch_data_wait(config.sap_path, db)
+    close_windows()
     db.handle_differences(curr_blocked_stock)
     db.save() 
-    close_windows()
-    open_db(db.file_path)
+    
+    open_excel_file(db.file_path)
+    
 
 if __name__ == "__main__":
     main()

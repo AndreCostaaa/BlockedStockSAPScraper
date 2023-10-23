@@ -1,6 +1,8 @@
 /env
 /SAP.zip
-/__pycache__
+*__pycache__
 /~$BlockedStockMQA.xlsx
-/*.dist
-/*.build
+*.build
+*.dist
+*.bin
+*.exe
