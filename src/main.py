@@ -6,6 +6,7 @@ from config import load_config
 
 from data_fetcher import fetch_data_wait
 
+VERSION = "v1.1"
 
 def copy_data(source_data, dest_file, sheet_name, dest_start_row, dest_start_column):
 
@@ -33,10 +34,13 @@ def copy_data(source_data, dest_file, sheet_name, dest_start_row, dest_start_col
 
 import time
 def main():
+    print(f"SAP Data Fecther {VERSION}")
     config = load_config()
+    
     input("[Script Startup] Les processus SAP et EXCEL vont se fermer. Sauvegardez votre travail et pressez sur ENTER...")
     close_windows()
     time.sleep(1)
+    
     db = DbHandler(config.xlsx_db_path)
  
     curr_blocked_stock = fetch_data_wait(config.sap_path, db)

@@ -291,7 +291,7 @@ class BlockedStock:
 class DbHandler:
 
     def __init__(self, file_path:str):
-        self.sharepoint_file_path = r"C:\Users\acosta18\Philip Morris International\Quality Neuchatel - Documents\31_Quality_Shared\04_MQA\Analyse blocked stock\Blocked_Stock\BlockedStock IN TEST\SharePointData.xlsx"
+        self.sharepoint_file_path = os.path.join(os.path.dirname(file_path), "SharePointData.xlsx")
         print(f"[DB Handler] Loading ${file_path}")
         self.file_path = file_path
         self.workbook = xl.load_workbook(file_path)
