@@ -112,16 +112,14 @@ class BlockedStockLine:
     storage_location:str
     base_unit_of_measure:str
     blocked:float
+    dif_stock: Optional[str]
     value_blockedstock:float
     currency:str
-    date_created:str
-    date_archived:Optional[str]
-    done:bool
+    commentaire:Optional[str]
     cc_rrp:str
     type:str
     resp:Optional[str]
-    provision:Optional[str]
-    commentaire:Optional[str]
+    provision:Optional[str] 
     nc_number_match:int
     ncf:Optional[str]
     ncr:Optional[str]
@@ -133,3 +131,6 @@ class BlockedStockLine:
     reason_code:Optional[str]
     vendor_name:Optional[str]
     destruction_at_vendors_cost:Optional[str]
+    date_created:str
+    date_archived:Optional[str]
+    done:bool
