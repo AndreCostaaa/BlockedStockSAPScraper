@@ -73,8 +73,10 @@ class ExcelHelper:
         i = 2
         for key, lst in data.items():
             for obj in lst:
+                
                 dict_obj = asdict(obj)
                 j = 1
+
                 for key, val in dict_obj.items():
                     sheet.cell(row=i, column=j).value = val
                     j += 1
@@ -100,8 +102,17 @@ class ExcelHelper:
                 curr_len = len(str(sheet.cell(row=j, column=i).value))
                 if curr_len > max_len:
                     max_len = curr_len
-            width = (max_len + 2) * 1.2
-            sheet.column_dimensions[xl.utils.get_column_letter(i)].width = width   
+            width = min((max_len + 2) * 1.2, 50)
+            sheet.column_dimensions[xl.utils.get_column_letter(i)].width = width  
+
+    @staticmethod
+    def flag_lines(sheet: Worksheet, lines:set):
+        if not lines:
+            return
+        for i, row in enumerate(sheet):
+            if i in lines:
+                for cell in row:
+                    cell.fill = PatternFill(patternType="solid", fill_type="solid", fgColor=Color("ffd700"))
 
 class StaticData:
     def __init__(self, src_sheet:Worksheet, dest_sheet:Worksheet, type: NCData | StockExitData, keys_translator_map: dict[str,str]):
@@ -285,8 +296,12 @@ class BlockedStock:
 
     def make_pretty(self):
         ExcelHelper.make_pretty(self.sheet)
-        
-
+    
+    def flag_keys(self, keys:list[str]):
+        keys = set(keys)
+        lines = {i + 1 for i, key in enumerate(self.blocked_stock.keys()) if key in keys}
+        ExcelHelper.flag_lines(self.sheet, lines)
+            
 
 class DbHandler:
 
@@ -301,7 +316,7 @@ class DbHandler:
         self.disappeared = BlockedStock(self.workbook["Gone from SAP"])
         self.archive = BlockedStock(self.workbook["Archive"])
         self.nc_data = StaticData(self.external_data_workbook["NCs"],self.workbook["NCs"], NCData, NC_TRANSLATOR_MAP)
-
+        self.keys_to_flag = set()
         self.stock_exit_new = StaticData(self.external_data_workbook["Stock Exit New"], self.workbook["Stock Exit New"], StockExitData, {})
 
         self.full_stock: dict[int, list[BlockedStockLine]]
@@ -343,22 +358,53 @@ class DbHandler:
             "vendor_id",
             "reason_code",
             "vendor_name",
-            "destruction_at_vendors_cost"
+            "destruction_at_vendors_cost",
+            "dif_stock"
         ]
 
         #Current stock + Disappeared -> Archive/Disappeared
         for key, lst in self.current.blocked_stock.items():
+            if len(lst) == 0:
+                #should never get here
+                print(f"[DEBUG] Len(lst) == 0 on handle_differences. Please Contact the Script Maintainer. With this information")
+                continue
             #stock gone
             if key not in new_blocked_stock.blocked_stock:
+
+                print(f"[INFO] Blocked Stock is gone {lst[0].material} {lst[0].batch}.")
+                print(f"\t It was previously stocked in {len(lst)} different locations")       
                 for obj in lst:
                     if obj.done:
+                        print(f"\t {obj.material} {obj.batch} {obj.storage_location} flagged as done. Moving it to 'Archive'")
                         obj.date_archived = get_date_now()
                         self.archive.add(key, obj)
                     else:
-                        self.disappeared.add(key,obj)                    
+                        print(f"\t {obj.material} {obj.batch} {obj.storage_location} not yet flagged as done. Moving it to 'Gone From SAP'")
+                        self.disappeared.add(key,obj)   
+            #stock still here, check if quantity changed and flag it 
+            else:
+                old_quantity = sum(x.blocked for x in lst)
+                new_quantity = sum(x.blocked for x in new_blocked_stock.blocked_stock[key])
+                dif = new_quantity - old_quantity
+                if dif:
+                    print(f"[INFO] Blocked Stock quantity changed for item {lst[0].material} {lst[0].batch}")
+                    print(f"\tOld Quantity: {old_quantity} New Quantity: {new_quantity} Difference: {dif:.3f} ")
+                    print(f"\tFlagging all {len(lst)} lines")
+                    for obj in lst:
+                        if obj.dif_stock:
+                            i = obj.dif_stock.rfind(' ')
+                            try:
+                                old_dif = float(obj.dif_stock[i+1:])
+                                tot_dif = old_dif + dif
+                                obj.dif_stock = f"{dif:.3f} / {tot_dif:.3f}"
+                            except:
+                                obj.dif_stock = f"{dif:.3f} / {dif:.3f}"
+                        else:
+                            obj.dif_stock = f"{dif:.3f} / {dif:.3f}"
+                    self.keys_to_flag.add(key)
+
         #New Stock -> Current Stock
         for key, lst in new_blocked_stock.blocked_stock.items():
-            
             for i, obj in enumerate(lst):
                 if key not in self.current.blocked_stock:
                     continue
@@ -366,6 +412,8 @@ class DbHandler:
                     if i >= len(self.current.blocked_stock[key]):
                         break
                     obj.__setattr__(arg, self.current.blocked_stock[key][i].__getattribute__(arg))
+                    if arg == "dif_stock" and obj.dif_stock: # means that we've had a difference in stock in the past, just reflag it
+                        self.keys_to_flag.add(key)
 
         self.current.blocked_stock = new_blocked_stock.blocked_stock
 
@@ -384,6 +432,8 @@ class DbHandler:
             sheet.write_data()
             sheet.add_data_validation(self.data_validation_map)
             sheet.make_pretty()
+        
+        self.current.flag_keys(self.keys_to_flag)
         print("[DB Handler] Finishing up...")
         for external_data in [self.nc_data, self.stock_exit_new]:
             external_data.write_data()
