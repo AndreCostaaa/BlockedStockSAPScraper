@@ -173,7 +173,7 @@ class BlockedStock:
     def load_data(self, ncs:StaticData, stock_exit:StaticData, locations:dict[str, list]):
         parsed_data = ExcelHelper.parse_data(self.sheet)
         self.blocked_stock = {}
-        for obj in parsed_data:
+        for i, obj in enumerate(parsed_data):
             
             
             if not obj.get("cc_rrp"):
@@ -198,7 +198,16 @@ class BlockedStock:
             if not obj.get("type"):
                 obj["type"] = ""
 
-            obj_id = hash(obj["material"] + obj["batch"])
+            material = obj.get("material")
+            batch = obj.get("batch")
+            if not material:
+                print(f"Material is null, line {i+2}")
+                continue
+            if not batch:
+                print(f"Batch is null, line {i+2}")
+                continue
+            
+            obj_id = hash(str(material) + str(batch))
             if ncs:
                 self.add_nc_data_to_obj(obj, ncs.data.get(obj_id, []))
             if stock_exit:
