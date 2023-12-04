@@ -6,7 +6,7 @@ from config import load_config
 
 from data_fetcher import fetch_data_wait
 
-VERSION = "v1.1"
+VERSION = "v1.3"
 
 def copy_data(source_data, dest_file, sheet_name, dest_start_row, dest_start_column):
 
