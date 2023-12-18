@@ -73,14 +73,21 @@ class ExcelHelper:
         i = 2
         for key, lst in data.items():
             for obj in lst:
-                
                 dict_obj = asdict(obj)
+                fill = None
+                if dict_obj.get("dif_stock"):
+                    fill = PatternFill(patternType="solid", fill_type="solid", fgColor=Color("ffd700"))
+
                 j = 1
 
                 for key, val in dict_obj.items():
-                    sheet.cell(row=i, column=j).value = val
+                    cell = sheet.cell(row=i, column=j)
+                    cell.value = val
+                    if fill:
+                        cell.fill = fill
                     j += 1
                 i += 1
+
     @staticmethod
     def make_pretty(sheet):
         title_font = Font(color="00000000", bold=True, sz=11)
@@ -442,7 +449,7 @@ class DbHandler:
             sheet.add_data_validation(self.data_validation_map)
             sheet.make_pretty()
         
-        self.current.flag_keys(self.keys_to_flag)
+        #self.current.flag_keys(self.keys_to_flag)
         print("[DB Handler] Finishing up...")
         for external_data in [self.nc_data, self.stock_exit_new]:
             external_data.write_data()
